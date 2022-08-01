@@ -5,6 +5,8 @@ TODO
   rehearsal, maybe you'll have to through away 30% of content!
   * Confirm with Christopher how much time will I have
 
+* Ask orgs whether I will have to hold a mic with one hand
+
 * Add TODO-notes from below to up here
 
 * Do a first iteration with pre-saved slides, maybe?
@@ -280,10 +282,18 @@ until we get the HTTP result
    // muahahaha, the shortest part of all talk! :-D
 
 
+-- Demo of test code for the simplest deployment app
+   when doing it, place the contexts in turns, each "slide" is a new
+   context so that people could read
+
+
 -- Section: Conclusion / The End
    (tty-testing wants to be in tty-toolbox one day)
 
-
+  This testing framework is shipped as a gem called `tty-testing`, it
+  is not officially included into `tty-toolkit` because I am too lazy
+  to do the boilerplate work, but it's already usable! Enjoy! Thank
+  you :-)
 
 
 
