@@ -1,0 +1,346 @@
+TODO
+----
+
+* !!! Before you go polishing, you MUST do a time-controlled
+  rehearsal, maybe you'll have to through away 30% of content!
+  * Confirm with Christopher how much time will I have
+
+* Add TODO-notes from below to up here
+
+* Do a first iteration with pre-saved slides, maybe?
+  Indeed, make a power point presentation as a Plan B.
+
+* Make sure everything is in the cloud so that you can perform that
+  presentation from any other laptop
+
+* Предложи Хэмину послушать.
+
+
+Content
+-------
+
+-- Section: Console tools on the rise
+
+(slide: Rust logo and Golang logo)
+
+Hello! At first, a little tribute to Rust and Golang. Because of them
+we are now having a renaissance of console tools development, a whole
+new wave to replace long-standing pillars of built-in console tools,
+which live with us for _decades_.
+
++------+--------+
+| cd   | z      |
+| grep | rg     |
+| find | fd     |
+| cat  | bat    |
+| mc   | xplr   |
+| ls   | exa    |
+|      | fzf    |
++------+--------+
+There are very good replacements for cd, grep, find, cat, midnight
+commander and even something as simple as ls.
+
+And even _new_ tools emerged, fuzzy search tool, fzf, written in Go,
+it doesn't have a predecessor. There was no mainstream console tool for fuzzy
+search at all!
+
+But. Don't get me wrong: all those grep and find, they are great, it's
+just the new ones are _even better_ for everyday use. For the first
+time in decated people dared to challenge gem, and succeeded.
+Again, thanks to the rise of low-level programming languages, which
+are designed for systems programming.
+
+
+-- Section: Console apps, not just console tools!
+
+But here comes a problem, an unfortunate price of this success:
+console programs still get associated with low-level programming, or
+even systems programming. Inevitably, console programs are perceived
+as something which is hard to write.
+_It's a myth, and I am going to bust it now._ Just give me a few
+minutes :-)
+
+On purpose, I will call console programs console **apps**, not console
+tools, exactly to emphasise they can solve daily users needs, or even
+business needs.
+
+And, also on purpose, I'll write them Ruby, an indisputably
+easy-to-learn language. As a Ruby enthusiast, I would note that Ruby is
+rather hard to master, but anyway it's a remarkably junior-friendly
+language.
+
+**But**, before I go further, a real-life example!
+
+In my previous startup, very suddenly, our home-grown Continuous
+Integration was broken, irrevocably. We decided to finally move away from
+our home-grown Jenkins to Github Actions and CircleCI, but it would
+take _weeks_ to move all the processes, checks, guard rails to new CI.
+
+So, while we were waiting for the our CI, we needed something _quick_
+to make our deployments a bit less error-prone, you know, to keep all
+the safety measures. When you deploy manually, they are very easy to forget.
+
+The best solution turned out to be console app, I'll quickly show it
+to you now.
+
+
+-- Section: Demo of my deployment app
+
+// it checked whether someone else is deploying right now
+// it checked if you have deployed your changes to staging before
+    deploying production
+// it allowed for fast track in emergencies
+
+Demo script:
+// spinner fetching data
+// "No on-going deploys detected, you can procees"
+// Your changes were not staged yet. What do you want to do?
+   // 1) Deploy these changes to staging
+   // 2) Deploy to production anyway (хоп-хоп и в продакшин) // можно
+           даже цветом потемнее сделать или шрифтом поменьше, тогда
+           можно и "хуяк" оставить
+   // 3) Abort safely
+// "It even allowed to pick specific commits do deploy"
+// Checkboxes over pretty git log
+// spinner, git push output
+// Success banner
+
+
+A nice looking app, does its job, easy to use. Above all:
+I didn't have to write backend and frontend in web. HTML forms,
+controllers, or even worse, frontend framework, storing github secrets
+at server, authenticating the user. Non of that is needed as the app
+is running locally, at a machine of each developer, there is no
+server, everything is in the app, no backend and frontend, git credentials of each user is their
+authentication, no need for security checks, no server running in
+cloud, no monitoring, no maintenance, no nothing.
+
+I estimate, overall building it as a console app took several times
+less engineering time than building it as a web app.
+
+And now you'll see how _easy_ such apps are built in Ruby.
+
+
+-- Section: Building console apps in Ruby
+
+(short demo of easiness of tty-toolkit things, awesome! Right in IRB,
+show awesomeness! `TTY::Checkbox.new(options: system('git pretty-log').split("\n")))`
+
+// spinner: inside could be, say, `git push`. Just imagine amount of
+frontend work and backend work to have the same spinner in web.
+
+// see script-drafts.rb
+
+
+-- Section: Okay, we wrote an app, how do we test?
+
+Imagine a web app, how do we test it?
+
+From a bird's eye view functional testing of a web app looks like
+this: you've got nested cases, when the account is created, when there
+is item
+
+```
+context 'when I create an account' do
+  before { post '/accounts', account_data }
+
+  # ...
+
+  context 'when I add an item to my account' do
+    before { post "/acconts/#{account.id}/items", item_data }
+
+    # ...
+
+    context 'when I delete that item' do
+      before { delete "/items/#{item.id}" }
+
+      # ...
+    end
+  end
+end
+```
+
+(tell about differences between web and console, the _points_ of rest
+where you can test the app)
+  "a meaningful point of rest your code _stops_ executing for some
+  time so that you can inspect the surroundings or provide a new
+  input, a new nudge to your code"
+  In unit-tests these meaningful points of rest are the method call:
+  before you call a method, and after.
+  In web application world it is before and after a HTTP request, you
+  provide an input as requerst data, after request you inspect a
+  response, you might inspect your database or other surroundings. In
+  short, those are meaningful points of rest.
+
+```
+context '' do
+  ...
+  context 'when on-going deploy is detected' do
+  end
+
+  context 'when no other concurrently running deploy deteced' do
+  end
+end
+```
+
+In Ruby world, you _expect_ things to be tested like this, _this_ is a
+quality of life which is _default_ to us, Rubyists.
+
+But if you _actually_ try to test your console app like this,
+surprisingly you _won't_ find neither a testing library, nor a testing
+framework, nor even a simple way of doing it, there is just no way.
+
+After many experiments it turned out that probably the best DSL for
+console apps testing framework you can get if you use Ruby Fibers.
+Fibers were introduced one major Ruby version ago, but they are still
+underappreciated, not widely used.
+
+
+
+-- Section: How Fibers work in Ruby in general
+   (how is it called in general, "manual scheduling" or what?)
+   (maybe concurrency/parallelism, ad your talk "just google What does
+   Gil guarantee you, you'll see my talk [and show a screenshot so
+   that they knew they have found a right one!]")
+
+TODO: find out how to call an execution/code thread, as the word
+"thread" might indicate a context of automatic scheduler. In Fiber
+world it has to be a more general term, no?
+
+(In case of normal threads Ruby interpreter has full control over when
+    execution of one thread switches to execution of another one...)
+(Mainly it happens at method boundaries, but in general it's all
+   concealed.)
+
+(In Fibers its all the way around, you got 100% control. It doesn't
+mean it's easier, or better, it's just different, pick it only for the
+right task)
+
+(
+example:
+
+```
+3.2.1 > result = HTTP.get
+_
+```
+
+Not a single line of your code gets executed until the server
+responds, we are stuck. Fibers won't help here.
+
+Now:
+
+```
+3.2.1 > result = HTTP.get_async
+     => <Result::Waiter # ...>
+3.2.1 > result.done?
+     => false
+3.2.1 > result.done?
+     => false
+3.2.1 > result.done?
+     => true
+3.2.1 > result.to_s
+     => "{ message: 'Hello, world!' }"
+```
+
+So, in real life, something like this happens:
+(behind the scenes:
+`spinner = TTY::Spinner.new(format: :bouncing_ball)`
+`spinner.singleton_class.define_method(:spin) { sleep(0.1); super() }`
+(or insert `sleep(0.1)` into result.done?)
+```
+result = HTTP.get_async
+loop
+  spinner.spin
+end until result.done?
+```
+(run this and show that spinner spins)
+
+Now here we can do fibers:
+```
+http_fiber = Fiber.new do
+  result = HTTP.get_async
+  Fiber.yield
+  loop
+    spinner.spin
+  end until result.done?
+end
+```
+
+(and then show that spinner does **not** spin until we do
+`fiber.resume`!, as the thread does not get executed it at all until
+we explicitly say so)
+then run `fiber.resume` for several times to show that spinner spins,
+until we get the HTTP result
+
+(behind the scenes HTTP can be just a `sleep(3); "{ message: "Hello, world!" }"`)
+
+)
+
+-- Section: So, how tty-testing is built internally, where fibers are
+   // muahahaha, the shortest part of all talk! :-D
+
+
+-- Section: Conclusion / The End
+   (tty-testing wants to be in tty-toolbox one day)
+
+
+
+
+
+TODO
+----
+
+- They might ask about other console testing frameworks, so google
+  around is e-cukes (or how was it called?) still around? Did
+  something new appear?
+
+- Демо-аппку (да и тесты, наверное?) запускай на абсолютно чёрном
+  полотне, не в своём tmux'е полу-сером, ещё и со статус-баром, а
+  воообще чтобы не было краёв, хммм, только надо сделать так чтобы не
+  в углу экрана всё было, хммммммм. Может, и правда в емаксе?
+  - Кстати, статус бар можно и нужно убрать `(setq mode-line-format
+    nil)`, наверняка и messages mini-buffer можно убрать
+
+- Process this:
+```
+(i) It's okay to finish earlier! "Well, I guess you got a few minutes
+free now :-)"
+
+(i) Speak sloooooowly
+
+web applications have well define moments when they can be tested: before and after a request
+
+but an application, it just runs, potentially forever if a user doesn't quit
+
+just like with any other frontend (and yes, console **IS** a type of frontend, though quite peculiar one) those defined points in time are the user inputs and the application outputs
+  ...and that's why we focus on _them_ (inputs and outputs) while testing console apps
+
+tty-toolkit is an amazing set of tools, huge thanks to its maintainer
+  this gem will become a part of the toolkit when there is enough application developers use it
+     therefore, now it's over to you folks!
+
+Use this if you are going to have slides
+https://docs.google.com/presentation/d/1gd12UxBKWzBxu-TgM-YGD1bFaIm4B0kdsGcv2dkzgU8/edit#slide=id.g13b468ea994_0_0
+
+How to begin:
+ go, rust, renaissance of new console tools development
+ console apps devlopment is often associated with low-level
+ programming, high-speed execution, where every byte, every CPU cycle
+ counts. But that's not always the case, especially when the app is
+ interactive, when most of the time it waits for the user to make a
+ move.
+
+ Even juniors who write in a simple language as Ruby can do it.
+
+ (personal story time!) Once in my previous life, when I've been building a startup, we faced
+ a problem... Continuous Integration software failed, over team was
+ overly busy, long story short we had to maintain our deployment
+ procedure manually, on our own.
+
+ ... No server to monitor, no alerts to have, no server to maintain,
+ no nothing.
+
+
+`4) Deploy anyway (хуяк-хуяк и в продакшин)`, лол
+
+```

@@ -1,0 +1,5 @@
+gem 'pastel'
+gem 'tty-table'
+gem 'tty-spinner'
+gem 'tty-box'
+gem 'tty-prompt'
