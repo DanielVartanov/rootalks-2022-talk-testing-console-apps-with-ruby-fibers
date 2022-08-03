@@ -3,6 +3,8 @@ require 'tty-spinner'
 require 'tty-box'
 require 'tty-prompt'
 
+puts TTY::Box.error('You have made a mistake')
+
 TTY::Table.new(
   ['Classic', 'New age', 'Language'],
   [
@@ -25,7 +27,7 @@ TTY::Spinner.new(pastel.green("[:spinner] Performing a long running action..."),
 end.then{}
 
 
-puts TTY::Box.error('You have made a mistake')
+
 
 
 TTY::ProgressBar.new(
@@ -39,6 +41,10 @@ TTY::ProgressBar.new(
 
 request = pastel.yellow 'DELETE /posts/1' # fancy-narrow-this-line-out
 prompt.yes? "Do you really want to #{request} ?"
+
+
+
+# vodka coffee beer
 
 
 prompt.select("Okay, I checked with them and I want to:") do |menu|

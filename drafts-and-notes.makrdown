@@ -1,25 +1,29 @@
 TODO
 ----
 
-* !!! Before you go polishing, you MUST do a time-controlled
-  rehearsal, maybe you'll have to through away 30% of content!
-  * Confirm with Christopher how much time will I have
+* Finish the text
 
-* Ask orgs whether I will have to hold a mic with one hand
+* Rehearse with slow, get a habit
 
-* Add TODO-notes from below to up here
-
-* Do a first iteration with pre-saved slides, maybe?
+* Do a first iteration with pre-saved slides, without animation
   Indeed, make a power point presentation as a Plan B.
+  - Use this for the slides
+    https://docs.google.com/presentation/d/1gd12UxBKWzBxu-TgM-YGD1bFaIm4B0kdsGcv2dkzgU8/edit#slide=id.g13b468ea994_0_0
 
 * Make sure everything is in the cloud so that you can perform that
   presentation from any other laptop
 
 * Предложи Хэмину послушать.
 
+- Кстати, статус бар можно и нужно убрать `(setq mode-line-format
+  nil)`, наверняка и messages mini-buffer можно убрать
+
+(i) Speak sloooooowly
 
 Content
 -------
+
+---=== Slooooower ===---
 
 -- Section: Console tools on the rise
 
@@ -46,6 +50,7 @@ And even _new_ tools emerged, fuzzy search tool, fzf, written in Go,
 it doesn't have a predecessor. There was no mainstream console tool for fuzzy
 search at all!
 
+
 But. Don't get me wrong: all those grep and find, they are great, it's
 just the new ones are _even better_ for everyday use. For the first
 time in decated people dared to challenge gem, and succeeded.
@@ -54,6 +59,14 @@ are designed for systems programming.
 
 
 -- Section: Console apps, not just console tools!
+
+ go, rust, renaissance of new console tools development
+ console apps devlopment is often associated with low-level
+ programming, high-speed execution, where every byte, every CPU cycle
+ counts. But that's not always the case, especially when the app is
+ interactive, when most of the time it waits for the user to make a
+ move.
+
 
 But here comes a problem, an unfortunate price of this success:
 console programs still get associated with low-level programming, or
@@ -91,7 +104,9 @@ to you now.
 // it checked whether someone else is deploying right now
 // it checked if you have deployed your changes to staging before
     deploying production
-// it allowed for fast track in emergencies
+// it allowed for fast track in emergencies\
+// it even allows you to pick individual commits to deploy
+// it runs git commands under the hood and gives you the result
 
 Demo script:
 // spinner fetching data
@@ -101,6 +116,7 @@ Demo script:
    // 2) Deploy to production anyway (хоп-хоп и в продакшин) // можно
            даже цветом потемнее сделать или шрифтом поменьше, тогда
            можно и "хуяк" оставить
+           `4) Deploy anyway #{pastel.dim("хуяк-хуяк и в продакшин")}`
    // 3) Abort safely
 // "It even allowed to pick specific commits do deploy"
 // Checkboxes over pretty git log
@@ -109,7 +125,7 @@ Demo script:
 
 
 A nice looking app, does its job, easy to use. Above all:
-I didn't have to write backend and frontend in web. HTML forms,
+There is no backend and frontend in web. HTML forms,
 controllers, or even worse, frontend framework, storing github secrets
 at server, authenticating the user. Non of that is needed as the app
 is running locally, at a machine of each developer, there is no
@@ -120,7 +136,7 @@ cloud, no monitoring, no maintenance, no nothing.
 I estimate, overall building it as a console app took several times
 less engineering time than building it as a web app.
 
-And now you'll see how _easy_ such apps are built in Ruby.
+And now I'll show how _easy_ such apps are built in Ruby.
 
 
 -- Section: Building console apps in Ruby
@@ -128,19 +144,29 @@ And now you'll see how _easy_ such apps are built in Ruby.
 (short demo of easiness of tty-toolkit things, awesome! Right in IRB,
 show awesomeness! `TTY::Checkbox.new(options: system('git pretty-log').split("\n")))`
 
+tty-toolkit is an amazing set of tools, huge thanks to its maintainer
+  this gem will become a part of the toolkit when there is enough application developers use it
+     therefore, now it's over to you folks!
+
+
+// then switch to scripts, but show IRB first
+
 // spinner: inside could be, say, `git push`. Just imagine amount of
 frontend work and backend work to have the same spinner in web.
 
 // see script-drafts.rb
 
 
--- Section: Okay, we wrote an app, how do we test?
+-- Section: Okay, imagine we wrote an app, how do we test?
 
 Imagine a web app, how do we test it?
 
 From a bird's eye view functional testing of a web app looks like
 this: you've got nested cases, when the account is created, when there
 is item
+
+// at each step you test it, everywhere where are there three dots you
+// inpsect response attributes, inspect the world and so on
 
 ```
 context 'when I create an account' do
@@ -174,9 +200,15 @@ where you can test the app)
   response, you might inspect your database or other surroundings. In
   short, those are meaningful points of rest.
 
+  web applications have well defined moments when they can be tested: before and after a request
+
+  but an application, it just runs, potentially forever if a user doesn't quit
+
+
 ```
 context '' do
-  ...
+  # ...
+
   context 'when on-going deploy is detected' do
   end
 
@@ -186,11 +218,12 @@ end
 ```
 
 In Ruby world, you _expect_ things to be tested like this, _this_ is a
-quality of life which is _default_ to us, Rubyists.
+quality bar which is _default_ in Ruby world.
 
 But if you _actually_ try to test your console app like this,
 surprisingly you _won't_ find neither a testing library, nor a testing
 framework, nor even a simple way of doing it, there is just no way.
+I was in this situation I had to come up with my own way.
 
 After many experiments it turned out that probably the best DSL for
 console apps testing framework you can get if you use Ruby Fibers.
@@ -204,6 +237,14 @@ underappreciated, not widely used.
    (maybe concurrency/parallelism, ad your talk "just google What does
    Gil guarantee you, you'll see my talk [and show a screenshot so
    that they knew they have found a right one!]")
+   - "Thread of execution!" / "Execution thread"
+   - Fibers/threads actually implements cooperative/preemptive
+     multitasking
+     "processes voluntarily yield control"
+     "This type of multitasking is called cooperative because all
+     programs must cooperate for the scheduling scheme to work."
+     Both fibers and coroutines are for cooperative multitasking, but
+     I won't dare telling you exact differences
 
 TODO: find out how to call an execution/code thread, as the word
 "thread" might indicate a context of automatic scheduler. In Fiber
@@ -270,13 +311,14 @@ end
 
 (and then show that spinner does **not** spin until we do
 `fiber.resume`!, as the thread does not get executed it at all until
-we explicitly say so)
+we explicitly say so, which is exactly what we need in testing, we
+need everything to stop while we are inspecting)
 then run `fiber.resume` for several times to show that spinner spins,
 until we get the HTTP result
 
 (behind the scenes HTTP can be just a `sleep(3); "{ message: "Hello, world!" }"`)
 
-)
+
 
 -- Section: So, how tty-testing is built internally, where fibers are
    // muahahaha, the shortest part of all talk! :-D
@@ -291,66 +333,6 @@ until we get the HTTP result
    (tty-testing wants to be in tty-toolbox one day)
 
   This testing framework is shipped as a gem called `tty-testing`, it
-  is not officially included into `tty-toolkit` because I am too lazy
+  is not yet officially included into `tty-toolkit` because I am too lazy
   to do the boilerplate work, but it's already usable! Enjoy! Thank
   you :-)
-
-
-
-TODO
-----
-
-- They might ask about other console testing frameworks, so google
-  around is e-cukes (or how was it called?) still around? Did
-  something new appear?
-
-- Демо-аппку (да и тесты, наверное?) запускай на абсолютно чёрном
-  полотне, не в своём tmux'е полу-сером, ещё и со статус-баром, а
-  воообще чтобы не было краёв, хммм, только надо сделать так чтобы не
-  в углу экрана всё было, хммммммм. Может, и правда в емаксе?
-  - Кстати, статус бар можно и нужно убрать `(setq mode-line-format
-    nil)`, наверняка и messages mini-buffer можно убрать
-
-- Process this:
-```
-(i) It's okay to finish earlier! "Well, I guess you got a few minutes
-free now :-)"
-
-(i) Speak sloooooowly
-
-web applications have well define moments when they can be tested: before and after a request
-
-but an application, it just runs, potentially forever if a user doesn't quit
-
-just like with any other frontend (and yes, console **IS** a type of frontend, though quite peculiar one) those defined points in time are the user inputs and the application outputs
-  ...and that's why we focus on _them_ (inputs and outputs) while testing console apps
-
-tty-toolkit is an amazing set of tools, huge thanks to its maintainer
-  this gem will become a part of the toolkit when there is enough application developers use it
-     therefore, now it's over to you folks!
-
-Use this if you are going to have slides
-https://docs.google.com/presentation/d/1gd12UxBKWzBxu-TgM-YGD1bFaIm4B0kdsGcv2dkzgU8/edit#slide=id.g13b468ea994_0_0
-
-How to begin:
- go, rust, renaissance of new console tools development
- console apps devlopment is often associated with low-level
- programming, high-speed execution, where every byte, every CPU cycle
- counts. But that's not always the case, especially when the app is
- interactive, when most of the time it waits for the user to make a
- move.
-
- Even juniors who write in a simple language as Ruby can do it.
-
- (personal story time!) Once in my previous life, when I've been building a startup, we faced
- a problem... Continuous Integration software failed, over team was
- overly busy, long story short we had to maintain our deployment
- procedure manually, on our own.
-
- ... No server to monitor, no alerts to have, no server to maintain,
- no nothing.
-
-
-`4) Deploy anyway (хуяк-хуяк и в продакшин)`, лол
-
-```
