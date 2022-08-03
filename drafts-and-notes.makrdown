@@ -1,29 +1,25 @@
 TODO
 ----
 
-* Finish the text
+* Prepare the slides
+  https://docs.google.com/presentation/d/1gd12UxBKWzBxu-TgM-YGD1bFaIm4B0kdsGcv2dkzgU8/edit#slide=id.g13b468ea994_0_0
 
-* Rehearse with slow, get a habit
+* Нотатки-комментарии внеси в презу
+  Как тогда с bit shits in history!
 
-* Do a first iteration with pre-saved slides, without animation
-  Indeed, make a power point presentation as a Plan B.
-  - Use this for the slides
-    https://docs.google.com/presentation/d/1gd12UxBKWzBxu-TgM-YGD1bFaIm4B0kdsGcv2dkzgU8/edit#slide=id.g13b468ea994_0_0
+* Установи то расширение, которое увеличивает шрифт нотаток
 
-* Make sure everything is in the cloud so that you can perform that
-  presentation from any other laptop
+* Теперь репетируй только медленно и только с нотатками
 
-* Предложи Хэмину послушать.
+* Отрепетируй с Хэмином, внеси коррективы
 
-- Кстати, статус бар можно и нужно убрать `(setq mode-line-format
-  nil)`, наверняка и messages mini-buffer можно убрать
+* Отрепетируй с оргами второй экран
 
-(i) Speak sloooooowly
 
 Content
 -------
 
----=== Slooooower ===---
+---=== Sloooooow ===---
 
 -- Section: Console tools on the rise
 
@@ -107,21 +103,7 @@ to you now.
 // it allowed for fast track in emergencies\
 // it even allows you to pick individual commits to deploy
 // it runs git commands under the hood and gives you the result
-
-Demo script:
-// spinner fetching data
-// "No on-going deploys detected, you can procees"
-// Your changes were not staged yet. What do you want to do?
-   // 1) Deploy these changes to staging
-   // 2) Deploy to production anyway (хоп-хоп и в продакшин) // можно
-           даже цветом потемнее сделать или шрифтом поменьше, тогда
-           можно и "хуяк" оставить
-           `4) Deploy anyway #{pastel.dim("хуяк-хуяк и в продакшин")}`
-   // 3) Abort safely
 // "It even allowed to pick specific commits do deploy"
-// Checkboxes over pretty git log
-// spinner, git push output
-// Success banner
 
 
 A nice looking app, does its job, easy to use. Above all:
@@ -141,8 +123,7 @@ And now I'll show how _easy_ such apps are built in Ruby.
 
 -- Section: Building console apps in Ruby
 
-(short demo of easiness of tty-toolkit things, awesome! Right in IRB,
-show awesomeness! `TTY::Checkbox.new(options: system('git pretty-log').split("\n")))`
+(short demo of easiness of tty-toolkit things, awesome! Right in IRB)
 
 tty-toolkit is an amazing set of tools, huge thanks to its maintainer
   this gem will become a part of the toolkit when there is enough application developers use it
@@ -168,25 +149,7 @@ is item
 // at each step you test it, everywhere where are there three dots you
 // inpsect response attributes, inspect the world and so on
 
-```
-context 'when I create an account' do
-  before { post '/accounts', account_data }
-
-  # ...
-
-  context 'when I add an item to my account' do
-    before { post "/acconts/#{account.id}/items", item_data }
-
-    # ...
-
-    context 'when I delete that item' do
-      before { delete "/items/#{item.id}" }
-
-      # ...
-    end
-  end
-end
-```
+// show this by adding code context by context
 
 (tell about differences between web and console, the _points_ of rest
 where you can test the app)
@@ -204,19 +167,6 @@ where you can test the app)
 
   but an application, it just runs, potentially forever if a user doesn't quit
 
-
-```
-context '' do
-  # ...
-
-  context 'when on-going deploy is detected' do
-  end
-
-  context 'when no other concurrently running deploy deteced' do
-  end
-end
-```
-
 In Ruby world, you _expect_ things to be tested like this, _this_ is a
 quality bar which is _default_ in Ruby world.
 
@@ -233,104 +183,94 @@ underappreciated, not widely used.
 
 
 -- Section: How Fibers work in Ruby in general
-   (how is it called in general, "manual scheduling" or what?)
-   (maybe concurrency/parallelism, ad your talk "just google What does
+
+// threads get switched almost randomly back and forth
+  //Mainly it happens at method boundaries, but in general it's all
+     concealed.
+
+//ad your talk "just google What does
    Gil guarantee you, you'll see my talk [and show a screenshot so
    that they knew they have found a right one!]")
-   - "Thread of execution!" / "Execution thread"
-   - Fibers/threads actually implements cooperative/preemptive
-     multitasking
-     "processes voluntarily yield control"
-     "This type of multitasking is called cooperative because all
-     programs must cooperate for the scheduling scheme to work."
-     Both fibers and coroutines are for cooperative multitasking, but
-     I won't dare telling you exact differences
 
-TODO: find out how to call an execution/code thread, as the word
-"thread" might indicate a context of automatic scheduler. In Fiber
-world it has to be a more general term, no?
+// even if all a thread does is waiting for a remote API or a database
+    to respond, CPU time is still used, which is waste
 
-(In case of normal threads Ruby interpreter has full control over when
-    execution of one thread switches to execution of another one...)
-(Mainly it happens at method boundaries, but in general it's all
-   concealed.)
+// To avoid waste we can use cooperative /kəʊˈɒp.ər.ə.tɪv/ multitasking!
+   // In ruby, it is implemented via Fibers
 
-(In Fibers its all the way around, you got 100% control. It doesn't
-mean it's easier, or better, it's just different, pick it only for the
-right task)
+// In case of ordinary threads Ruby interpreter has full control over when
 
-(
-example:
+In contrast to regular threads, with Fibers, a block
+voluntarily gives up CPU time to another block at defined points.
 
-```
-3.2.1 > result = HTTP.get
-_
-```
+//  execution of one thread switches to execution of another one...
 
-Not a single line of your code gets executed until the server
-responds, we are stuck. Fibers won't help here.
+// some simple Fiber example, without any HTTP
 
-Now:
+// and then show that progress bar does **not** progress until we do
+    `fiber.resume`!, as the thread does not get executed it at all until
+    we explicitly say so, which is exactly what we need in testing, we
+    need everything to stop while we are inspecting)
+    then run `fiber.resume` for several times to show that spinner spins,
+    until we get the HTTP result
 
-```
-3.2.1 > result = HTTP.get_async
-     => <Result::Waiter # ...>
-3.2.1 > result.done?
-     => false
-3.2.1 > result.done?
-     => false
-3.2.1 > result.done?
-     => true
-3.2.1 > result.to_s
-     => "{ message: 'Hello, world!' }"
-```
+// it _stops_, and we can't execute the next line of code until it's done
+
+// Not a single line of your code gets executed until the server
+// responds, we are stuck. Fibers are useless if we are using
+
+
+In order to utilise Fibers, we need to take asynchronous libraries
 
 So, in real life, something like this happens:
-(behind the scenes:
-`spinner = TTY::Spinner.new(format: :bouncing_ball)`
-`spinner.singleton_class.define_method(:spin) { sleep(0.1); super() }`
-(or insert `sleep(0.1)` into result.done?)
-```
-result = HTTP.get_async
-loop
-  spinner.spin
-end until result.done?
-```
-(run this and show that spinner spins)
 
-Now here we can do fibers:
-```
-http_fiber = Fiber.new do
-  result = HTTP.get_async
-  Fiber.yield
-  loop
-    spinner.spin
-  end until result.done?
-end
-```
+But with Fibers, depending on what else we are doing we might or might
+not give that block CPU time.
 
-(and then show that spinner does **not** spin until we do
-`fiber.resume`!, as the thread does not get executed it at all until
-we explicitly say so, which is exactly what we need in testing, we
-need everything to stop while we are inspecting)
-then run `fiber.resume` for several times to show that spinner spins,
-until we get the HTTP result
+If it was a regular _thread_, that progress bar would gradually move
+forward as the remote server slowly responds with data. Because with
+regular threads we do not control when and for how long do we switch
+execution between blocks.
 
-(behind the scenes HTTP can be just a `sleep(3); "{ message: "Hello, world!" }"`)
+//In Fibers its all the way around, you got 100% control. It doesn't
+    mean it's easier, or better, it's just different, pick it only for the
+    right task
 
+
+So, that's fibers -- total control over switch between execution of
+blocks in Ruby.
+
+Now let's apply that to testing of console apps.
 
 
 -- Section: So, how tty-testing is built internally, where fibers are
    // muahahaha, the shortest part of all talk! :-D
 
+// so, we are to stop execution of a console app which we are testing
+   at moments of user input and app output
 
--- Demo of test code for the simplest deployment app
-   when doing it, place the contexts in turns, each "slide" is a new
-   context so that people could read
+// all those tty-promots boil down to a handful of low-level methods
 
+// show how we re-define? or just say it?
+
+
+Aaand, that's it! Literally, everything else is just DSL for
+convenience. But look what we can do with such a simple thing:
+
+
+-- Show testing of a simplest app
+
+Let's take a simple app which asks you if you want to order food, and if
+you do, asks you what exact
+
+// No, don't print the code, show how it LOOKS! No code, only demo and tests!
+
+// Now how would we test it?
+
+see scripts-and-drafts
 
 -- Section: Conclusion / The End
-   (tty-testing wants to be in tty-toolbox one day)
+  // screenshot of tty-testing github page
 
   This testing framework is shipped as a gem called `tty-testing`, it
   is not yet officially included into `tty-toolkit` because I am too lazy
